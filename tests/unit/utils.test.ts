@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   formatArticle,
   formatArticleList,
+  htmlToText,
   getConfigFromEnv,
   resourceResult,
   textResult,
@@ -96,6 +97,35 @@ describe('utils', () => {
     expect(out).toContain('T1');
     expect(out).toContain('[Feed]');
     expect(out).toContain('ID: abc');
+  });
+
+  it('formatArticleList includes url and plain-text content when requested', () => {
+    const article = {
+      id: 'abc',
+      title: 'T1',
+      url: 'https://example.com/post',
+      content: '<p>Hello &amp; <b>welcome</b></p><p>Second&nbsp;para</p>',
+      isRead: false,
+      isStarred: false,
+      published: 0,
+    };
+
+    const withoutContent = formatArticleList([article]);
+    expect(withoutContent).toContain('URL: https://example.com/post');
+    expect(withoutContent).not.toContain('Content:');
+
+    const withContent = formatArticleList([article], { includeContent: true });
+    expect(withContent).toContain('URL: https://example.com/post');
+    expect(withContent).toContain('    Hello & welcome');
+    expect(withContent).toContain('    Second para');
+    expect(withContent).not.toContain('<p>');
+
+    const truncated = formatArticleList([article], { includeContent: true, maxContentLength: 5 });
+    expect(truncated).toContain('    Hello… [truncated]');
+  });
+
+  it('htmlToText strips tags, scripts and decodes entities', () => {
+    expect(htmlToText('<script>x()</script>A<br/>B &#39;C&#x27; &lt;D&gt;')).toBe("A\nB 'C' <D>");
   });
 
   it('textResult and resourceResult build MCP results', () => {

@@ -23,6 +23,18 @@ export const listArticlesSchema = z
     label: z.string().optional().describe('Filter by label name'),
     order: z.enum(['newest', 'oldest']).optional().describe('Sort order'),
     continuation: z.string().optional().describe('Continuation token for pagination'),
+    includeContent: z
+      .boolean()
+      .optional()
+      .describe('Include the article body (as plain text) for each article. Defaults to true.'),
+    maxContentLength: z
+      .number()
+      .int()
+      .min(0)
+      .optional()
+      .describe(
+        'Maximum number of characters of article body per article (default 2000, 0 = no limit)'
+      ),
   })
   .strict();
 

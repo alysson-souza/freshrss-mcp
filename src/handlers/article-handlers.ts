@@ -22,8 +22,12 @@ export function registerArticleTools(server: McpServer, client: FreshRSSClient):
       inputSchema: listArticlesSchema,
     },
     wrapTool('list_articles', async (args: z.infer<typeof listArticlesSchema>) => {
-      const result = await client.articles.list(args);
-      const formatted = formatArticleList(result.articles);
+      const { includeContent, maxContentLength, ...listOptions } = args;
+      const result = await client.articles.list(listOptions);
+      const formatted = formatArticleList(result.articles, {
+        includeContent: includeContent ?? true,
+        maxContentLength: maxContentLength ?? 2000,
+      });
       const continuation =
         result.continuation !== undefined
           ? `\n\nMore articles available. Use continuation: ${result.continuation}`
